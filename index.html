@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termux // SECURE-TEMPMAIL VIP-ENGINE v7.0</title>
+    <title>Termux // SECURE-TEMPMAIL VIP-ENGINE v7.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         * {
@@ -196,7 +196,7 @@
     <div class="bios-header">
         <div class="bios-title">
             <h1>root@termux-sys:~# ./temp_mail_engine.real</h1>
-            <p>[SISTEMA REAL DE INTERCEPCIÓN SMTP Y REGISTROS WEB]</p>
+            <p>[SISTEMA REAL CON ROTACIÓN AUTOMÁTICA DE 1 HORA]</p>
         </div>
         <div class="status-pill" id="systemStatus">MODO: [GRATIS] ACTIVO</div>
     </div>
@@ -209,7 +209,7 @@
             <div class="pane-title">> Consola de Comandos Reales (CLI)</div>
             <div class="terminal-screen" id="terminalScreen">
                 <div class="output-line">Conectando sockets reales con la red de servidores SMTP... [OK]</div>
-                <div class="output-line success">¡Motor listo en la vida real! Escribe <span class="highlight">ayuda</span> para comenzar.</div>
+                <div class="output-line success">¡Motor listo! Rotación automática cada 1 hora activa. Escribe <span class="highlight">ayuda</span>.</div>
                 <div class="output-line">--------------------------------------------------</div>
             </div>
             <div class="cmd-box">
@@ -221,7 +221,7 @@
         <!-- COLUMNA DERECHA: SERVICIOS GRATIS Y VIP -->
         <div class="pane control-panel">
             <div class="pane-title">> Servicios [Gratis & VIP]</div>
-            <button class="btn-cmd" onclick="executeCommand('crear correo')">⚡ [1] Crear Correo Real (Gratis)</button>
+            <button class="btn-cmd" onclick="executeCommand('crear correo')">⚡ [1] Forzar / Crear Nuevo Correo</button>
             <button class="btn-cmd" onclick="executeCommand('bandeja')">🔄 [2] Escanear Mensajes en Servidor</button>
             <button class="btn-cmd btn-vip" onclick="executeCommand('vip activar')">👑 [3] Activar Servidor VIP Real</button>
             <button class="btn-cmd" onclick="generarPasswordSegura()">🔑 [4] Generar Clave para Registro</button>
@@ -230,8 +230,8 @@
             <div class="cheat-box">
                 <strong>COMANDOS REALES:</strong><br>
                 • <span>ayuda</span> : Muestra la guía.<br>
-                • <span>vip activar</span> : Sube a categoría VIP.<br>
-                • <span>cambiar correo</span> : Renueva la bandeja.
+                • <span>crear correo</span> : Cambia de correo al instante.<br>
+                • <span>vip activar</span> : Sube a categoría VIP.
             </div>
         </div>
 
@@ -250,12 +250,13 @@
 </div>
 
 <script>
-    // Credenciales de API pública real y funcional para correos temporales
     const API_KEY = "pub_nRn1hUwpdmZvxQNVWDfoXgKyF7dIm9nRIIIt1qDw";
-    const BASE_URL = "https://mtempmail.com/api";
+    const TARGET_URL = "https://mtempmail.com/api";
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
     
     let currentEmail = "";
     let pollInterval = null;
+    let autoRotateTimer = null;
     let isVipActive = false;
 
     const screen = document.getElementById("terminalScreen");
@@ -296,10 +297,9 @@
             case "help":
                 printToScreen(`
                     <strong>COMANDOS DEL SISTEMA REAL:</strong><br>
-                    &nbsp;&nbsp;• <span class="highlight">crear correo</span> : Genera un correo real funcional.<br>
+                    &nbsp;&nbsp;• <span class="highlight">crear correo</span> : Cambia de correo inmediatamente.<br>
                     &nbsp;&nbsp;• <span class="highlight">bandeja</span> : Revisa los mensajes reales entrantes.<br>
                     &nbsp;&nbsp;• <span class="highlight">vip activar</span> : Desbloquea velocidad y dominios VIP.<br>
-                    &nbsp;&nbsp;• <span class="highlight">cambiar correo</span> : Crea un nuevo buzón de inmediato.<br>
                     &nbsp;&nbsp;• <span class="highlight">limpiar</span> : Borra el registro de la consola.
                 `);
                 break;
@@ -314,7 +314,7 @@
 
             case "crear":
             case "cambiar":
-                createNewEmailReal();
+                createNewEmailReal(true); // true indica que fue forzado manualmente
                 break;
 
             case "correo":
@@ -344,35 +344,51 @@
         }
     }
 
-    // LÓGICA REAL: Creación real de buzón mediante la API de red
-    async function createNewEmailReal() {
-        printToScreen(`[*] Contactando servidor SMTP real ${isVipActive ? '(Servidor VIP de Alta Prioridad)...' : '(Servidor Estándar Gratis)...'}`);
+    // Configura o reinicia el temporizador de 1 hora (3600000 milisegundos)
+    function reiniciarTemporizadorHora() {
+        if (autoRotateTimer) clearTimeout(autoRotateTimer);
+        autoRotateTimer = setTimeout(() => {
+            printToScreen(`[⏱️] <span class="highlight">¡Ha transcurrido 1 hora! Rotando buzón automáticamente...</span>`);
+            createNewEmailReal(false);
+        }, 3600000); // 1 hora exacta
+    }
+
+    async function createNewEmailReal(manual = false) {
+        if (manual) {
+            printToScreen(`[⚡] <span class="highlight">Cambio de correo forzado por el usuario. Solicitando nuevo buzón...</span>`);
+        } else {
+            printToScreen(`[*] Contactando servidor SMTP real para rotación periódica...`);
+        }
+
         try {
-            const response = await fetch(`${BASE_URL}/emails/${API_KEY}`, { method: "POST" });
+            const target = `${TARGET_URL}/emails/${API_KEY}`;
+            const response = await fetch(PROXY_URL + encodeURIComponent(target));
             const data = await response.json();
             
             if (data && data.data && data.data.email) {
                 currentEmail = data.data.email;
-                printToScreen(`[+] <span class="success">¡Buzón real creado con éxito en la red!</span>`);
+                printToScreen(`[+] <span class="success">¡Buzón real listo y activo!</span>`);
                 printToScreen(`[+] Dirección: <span class="highlight">${currentEmail}</span>`);
                 navigator.clipboard.writeText(currentEmail);
-                printToScreen(`[i] Ya puedes usar este correo para registrarte en cualquier plataforma real.`);
+                printToScreen(`[i] Copiado al portapapeles. Válido por 1 hora (o hasta que lo cambies de nuevo).`);
                 
                 inboxList.innerHTML = `<div style="color: #444; text-align: center; margin-top: 80px;">-- Escuchando buzón real ${currentEmail} --</div>`;
                 
+                // Reiniciar intervalo de escaneo de mensajes
                 if (pollInterval) clearInterval(pollInterval);
-                // Si es VIP, escanea más rápido (3 segundos); si es Gratis, cada 6 segundos
                 const intervaloEscaneo = isVipActive ? 3000 : 6000;
                 pollInterval = setInterval(checkInboxReal, intervaloEscaneo);
+
+                // Reiniciar el contador de 1 hora cada vez que se crea uno nuevo
+                reiniciarTemporizadorHora();
             } else {
                 printToScreen(`<span class="error">[-] Error de asignación en la base de datos de correos.</span>`);
             }
         } catch (error) {
-            printToScreen(`<span class="error">[-] Error crítico de red o bloqueo de CORS en el navegador.</span>`);
+            printToScreen(`<span class="error">[-] Error crítico de red o sincronización con el proxy.</span>`);
         }
     }
 
-    // LÓGICA REAL: Petición real para consultar mensajes y códigos OTP de páginas web
     async function checkInboxReal() {
         if (!currentEmail) {
             printToScreen(`<span class="error">[-] Advertencia: Primero debes ejecutar 'crear correo'.</span>`);
@@ -380,12 +396,13 @@
         }
         
         try {
-            const response = await fetch(`${BASE_URL}/messages/${API_KEY}/${currentEmail}`);
+            const target = `${TARGET_URL}/messages/${API_KEY}/${currentEmail}`;
+            const response = await fetch(PROXY_URL + encodeURIComponent(target));
             const data = await response.json();
             
             if (data && data.data && data.data.length > 0) {
                 inboxList.innerHTML = "";
-                data.data.forEach((msg, index) => {
+                data.data.forEach((msg) => {
                     const card = document.createElement("div");
                     card.className = "mail-card";
                     if(isVipActive) card.style.borderColor = "#ffd700";
@@ -404,7 +421,6 @@
         }
     }
 
-    // LÓGICA REAL: Activación de Servicios VIP
     function activarModoVIP() {
         isVipActive = true;
         systemStatus.innerText = "MODO: [VIP ELITE] ACTIVADO";
@@ -413,17 +429,15 @@
         promptSymbol.style.color = "#ffd700";
         
         printToScreen(`[👑] <span class="vip-text">¡Servicios VIP activados con éxito!</span>`);
-        printToScreen(`[+] Privilegios aplicados: Escaneo de red acelerado (cada 3s), bypass de filtros anti-spam corporativos y dominios exclusivos de alta reputación.`);
+        printToScreen(`[+] Privilegios aplicados: Escaneo de red acelerado (cada 3s) y dominios exclusivos.`);
         
         if (currentEmail) {
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(checkInboxReal, 3000);
-            printToScreen(`[i] Frecuencia de escucha de tu correo actual actualizada a velocidad VIP.`);
         }
         alert("¡Modo VIP activado correctamente en tu sesión!");
     }
 
-    // Utilidad real: Generador inteligente de contraseñas de alta seguridad
     function generarPasswordSegura() {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_-+";
         let pass = "";
@@ -435,11 +449,11 @@
         alert("¡Contraseña segura real copiada al portapapeles: " + pass + " !");
     }
 
-    // Inicializar un buzón real automáticamente al cargar la aplicación
+    // Arrancar el primer correo automático al cargar la página
     window.onload = () => {
-        createNewEmailReal();
+        createNewEmailReal(false);
     };
 </script>
 
 </body>
-    </html>
+                </html>
