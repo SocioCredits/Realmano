@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correo Temporal de Identidad Persistente</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome para iconos limpios y modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Cabecera -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h1>TempMail <span class="badge">Persistente</span></h1>
+            </div>
+            <p class="subtitle">Tu dirección se mantiene activa mientras la pestaña esté abierta.</p>
+        </header>
+
+        <!-- Tarjeta de Control de Correo -->
+        <section class="email-card">
+            <div class="email-display-wrapper">
+                <span id="emailAddress" class="email-address">Cargando dirección...</span>
+                <div class="email-actions">
+                    <button id="copyBtn" class="btn btn-secondary" title="Copiar al portapapeles">
+                        <i class="fa-regular fa-copy"></i> Copiar
+                    </button>
+                    <button id="newEmailBtn" class="btn btn-danger" title="Generar nueva dirección">
+                        <i class="fa-solid fa-rotate"></i> Nueva Dirección
+                    </button>
+                </div>
+            </div>
+            <div class="status-bar">
+                <span class="status-indicator" id="statusIndicator">
+                    <span class="dot"></span> Conectado - Verificando cada 10s
+                </span>
+                <span id="lastUpdated" class="last-updated">Actualizado ahora</span>
+            </div>
+        </section>
+
+        <!-- Sección de Bandeja de Entrada -->
+        <main class="inbox-section">
+            <div class="inbox-header">
+                <h2><i class="fa-solid fa-inbox"></i> Bandeja de Entrada</h2>
+                <button id="refreshBtn" class="btn-icon" title="Actualizar ahora">
+                    <i class="fa-solid fa-sync"></i>
+                </button>
+            </div>
+            
+            <div id="inboxContainer" class="inbox-container">
+                <!-- Estado Vacío -->
+                <div class="empty-state" id="emptyState">
+                    <i class="fa-regular fa-envelope-open"></i>
+                    <p>Bandeja vacía. Esperando nuevos mensajes...</p>
+                </div>
+                <!-- Lista de Mensajes (Oculta por defecto) -->
+                <div class="message-list" id="messageList" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Leer Mensaje -->
+    <div class="modal-backdrop" id="emailModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalSubject">Asunto del Mensaje</h3>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-meta">
+                <div><strong>De:</strong> <span id="modalSender">remitente@example.com</span></div>
+                <div><strong>Fecha:</strong> <span id="modalDate">Fecha</span></div>
+            </div>
+            <div class="modal-body-container">
+                <!-- Iframe sandboxed para renderizar HTML de forma segura -->
+                <iframe id="modalBodyFrame" class="modal-iframe" sandbox="allow-same-origin"></iframe>
+                <div id="modalBodyText" class="modal-text" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="view-toggle">
+                    <button id="toggleHtmlBtn" class="btn btn-sm active">HTML</button>
+                    <button id="toggleTextBtn" class="btn btn-sm">Texto plano</button>
+                </div>
+                <button class="btn btn-secondary" id="closeModalFooterBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación Flotante (Toast) -->
+    <div id="toast" class="toast">¡Copiado al portapapeles!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
