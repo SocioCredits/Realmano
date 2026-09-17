@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailDrop Local - Mi Correo Temporal</title>
+    <style>
+        /* ESTILOS GLOBALES (Modo Oscuro Elegante) */
+        :root {
+            --bg-principal: #0f172a;
+            --bg-tarjetas: #1e293b;
+            --border-color: #334155;
+            --texto-principal: #f8fafc;
+            --texto-secundario: #94a3b8;
+            --azul-accent: #38bdf8;
+            --azul-hover: #0284c7;
+            --verde-exito: #4ade80;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vi;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 { margin: 0; font-size: 2.2rem; color: var(--azul-accent); }
+        header p { margin: 0.5rem 0 0 0; color: var(--texto-secundario); }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            box-sizing: border-box;
+        }
+
+        section {
+            background-color: var(--bg-tarjetas);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 { font-size: 1.2rem; margin-top: 0; color: var(--texto-principal); }
+
+        /* SECCIÓN GENERADOR DE CORREO */
+        .caja-correo {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        #direccion-correo {
+            flex: 1;
+            background-color: var(--bg-principal);
+            border: 1px solid var(--border-color);
+            color: var(--azul-accent);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: monospace;
+            outline: none;
+        }
+
+        button {
+            background-color: var(--azul-accent);
+            color: #0f172a;
+            border: none;
+            padding: 0.75rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        button:hover { background-color: var(--azul-hover); color: white; }
+        #btn-nuevo { background-color: transparent; border: 1px solid var(--border-color); color: var(--texto-principal); }
+        #btn-nuevo:hover { background-color: var(--border-color); }
+
+        /* BANDEJA DE ENTRADA y LISTA DE MENSAJES */
+        .cabecera-bandeja {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        #contador-correos {
+            background-color: var(--border-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--azul-accent);
+        }
+
+        .sin-correos {
+            text-align: center;
+            color: var(--texto-secundario);
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        .tarjeta-mensaje {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: var(--bg-principal);
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .tarjeta-mensaje:hover {
+            transform: translateY(-2px);
+            border-color: var(--azul-accent);
+        }
+
+        .tarjeta-mensaje.unread {
+            border-left: 4px solid var(--azul-accent);
+        }
+
+        .info-mensaje { display: flex; flex-direction: column; gap: 0.25rem; }
+        .remitente { font-weight: bold; font-size: 0.95rem; }
+        .asunto { color: var(--texto-secundario); font-size: 0.9rem; }
+        .hora { font-size: 0.8rem; color: var(--texto-secundario); white-space: nowrap; }
+
+        /* VISTA DE DETALLE DEL MENSAJE */
+        #btn-volver { margin-bottom: 1rem; background-color: transparent; border: 1px solid var(--border-color); color: var(--texto-principal); }
+        #btn-volver:hover { background-color: var(--border-color); }
+        .detalle-correo h3 { margin: 0 0 0.5rem 0; font-size: 1.4rem; }
+        .detalle-correo hr { border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0; }
+        #detalle-cuerpo { line-height: 1.6; color: #cbd5e1; background: var(--bg-principal); padding: 1rem; border-radius: 8px; }
+
+        /* NOTIFICACIONES FLOTANTES */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--verde-exito);
+            color: #0f172a;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        footer { text-align: center; padding: 1.5rem; color: var(--texto-secundario); font-size: 0.85rem; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📬 MailDrop Local</h1>
+        <p>Tu bandeja de entrada temporal para pruebas en localhost.</p>
+    </header>
+
+    <main>
+        <!-- SECCIÓN DEL CORREO GENERADO -->
+        <section id="seccion-correo">
+            <h2>Tu dirección de correo actual:</h2>
+            <div class="caja-correo">
+                <input type="text" id="direccion-correo" value="cargando..." readonly>
+                <button id="btn-copiar">📋 Copiar</button>
+                <button id="btn-nuevo">🔄 Generar Otro</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE LA BANDEJA DE ENTRADA -->
+        <section id="seccion-bandeja">
+            <div class="cabecera-bandeja">
+                <h2>📥 Bandeja de Entrada</h2>
+                <span id="contador-correos">0 mensajes</span>
+            </div>
+            <div id="lista-mensajes">
+                <!-- Se llena dinámicamente con JavaScript -->
+            </div>
+        </section>
+
+        <!-- VISTA DEL CONTENIDO DEL CORREO SELECCIONADO -->
+        <section id="vista-correo" style="display: none;">
+            <button id="btn-volver">⬅️ Volver a la lista</button>
+            <div class="detalle-correo">
+                <h3 id="detalle-asunto">Asunto</h3>
+                <p><strong>De:</strong> <span id="detalle-remitente">remitente</span></p>
+                <hr>
+                <div id="detalle-cuerpo">Contenido</div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast">¡Copiado al portapapeles!</div>
+
+    <footer>
+        <p>MailDrop Local - Listo para subir a GitHub Pages. Proyecto de simulación en memoria.</p>
+    </footer>
+
+    <script>
+        // --- BASE DE DATOS EN MEMORIA (Simulación) ---
+        let correoActual = "";
+        let mensajes = [];
+
+        // Correos ficticios para simular actividad en la demo de GitHub
+        const remitentesDemo = ["soporte@github.com", "newsletter@tech.io", "alertas@localhost", "noreply@banco.com"];
+        const asuntosDemo = ["Confirma tu cuenta de desarrollo", "Tu reporte mensual está listo", "⚠️ Alerta de seguridad en localhost", "Tu código de verificación: 4892"];
+        const cuerposDemo = [
+            "¡Hola dev! Gracias por usar MailDrop. Para confirmar tu entorno local haz clic en el siguiente enlace simulado: <br><br><a href='#' style='color:#38bdf8'>[Confirmar Entorno Local]</a>",
+            "Aquí tienes las métricas de tu servidor del último mes. Todo marcha en orden, el uso de CPU se mantiene bajo el 15%. No se requieren acciones adicionales.",
+            "Hemos detectado un intento de inicio de sesión sospechoso desde una IP no registrada en tus archivos de entorno `.env`. Si no fuiste tú, revisa tus credenciales.",
+            "Por razones de seguridad, utiliza el siguiente token para cambiar tu contraseña en el panel de pruebas. Expira en 5 minutos. <br><br><strong style='font-size: 24px; color:#38bdf8;'>4892</strong>"
+        ];
+
+        // --- ELEMENTOS DEL DOM ---
+        const txtCorreo = document.getElementById("direccion-correo");
+        const btnCopiar = document.getElementById("btn-copiar");
+        const btnNuevo = document.getElementById("btn-nuevo");
+        const listaMensajes = document.getElementById("lista-mensajes");
+        const contadorCorreos = document.getElementById("contador-correos");
+        const seccionBandeja = document.getElementById("seccion-bandeja");
+        const vistaCorreo = document.getElementById("vista-correo");
+        const btnVolver = document.getElementById("btn-volver");
+        const toast = document.getElementById("toast");
+
+        // --- FUNCIONES ---
+
+        // Generar dirección aleatoria
+        function generarCorreoAleatorio() {
+            const strings = "abcdefghijklmnopqrstuvwxyz0123456789";
+            let usuario = "";
+            for(let i=0; i<8; i++) {
+                usuario += strings.charAt(Math.floor(Math.random() * strings.length));
+            }
+  
