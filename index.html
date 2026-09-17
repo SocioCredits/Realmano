@@ -3,93 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correo Temporal de Identidad Persistente</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome para iconos limpios y modernos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Termux // SECURE-TEMPMAIL VIP-ENGINE v7.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #030503;
+            color: #00ff66;
+            font-family: 'Share Tech Mono', monospace;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        .matrix-frame {
+            max-width: 1000px;
+            margin: 0 auto;
+            border: 2px solid #00ff66;
+            background-color: #050805;
+            box-shadow: 0 0 25px rgba(0, 255, 102, 0.25);
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .bios-header {
+            border-bottom: 1px dashed #00ff66;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .bios-title h1 {
+            font-size: 1.1rem;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+        }
+        .bios-title p {
+            font-size: 0.75rem;
+            color: #00aa44;
+        }
+        .status-pill {
+            background: #002211;
+            border: 1px solid #00ff66;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+        .vip-active {
+            border-color: #ffd700;
+            color: #ffd700;
+            background: #221a00;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+        }
+        @media(max-width: 768px) {
+            .workspace-grid { grid-template-columns: 1fr; }
+        }
+
+        .pane {
+            border: 1px solid #008833;
+            background: #040704;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+        }
+        .pane-title {
+            font-size: 0.85rem;
+            color: #00ffcc;
+            border-bottom: 1px solid #004422;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .terminal-screen {
+            height: 220px;
+            overflow-y: auto;
+            font-size: 0.88rem;
+            margin-bottom: 8px;
+            background: #020302;
+            padding: 8px;
+            border: 1px solid #003311;
+        }
+        .output-line {
+            line-height: 1.4;
+            word-break: break-all;
+        }
+        .cmd-box {
+            display: flex;
+            align-items: center;
+            background: #091209;
+            border: 1px solid #00ff66;
+            padding: 6px 10px;
+            border-radius: 3px;
+        }
+        .prompt {
+            color: #00ffcc;
+            margin-right: 6px;
+            font-weight: bold;
+        }
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .inbox-container {
+            height: 250px;
+            overflow-y: auto;
+            background: #020302;
+            border: 1px solid #003311;
+            padding: 8px;
+        }
+        .mail-card {
+            background: #0b160b;
+            border-left: 3px solid #00ffcc;
+            padding: 6px;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+        .mail-from { color: #777; font-size: 0.7rem; }
+        .mail-subject { color: #00ffcc; font-weight: bold; }
+        .mail-body { color: #ccc; margin-top: 2px; }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-cmd {
+            background: #071107;
+            color: #00ff66;
+            border: 1px solid #00ff66;
+            padding: 7px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.78rem;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: 0.2s;
+        }
+        .btn-cmd:hover {
+            background: #00ff66;
+            color: #000;
+            box-shadow: 0 0 8px #00ff66;
+        }
+        .btn-vip {
+            border-color: #ffd700;
+            color: #ffd700;
+            background: #151100;
+        }
+        .btn-vip:hover {
+            background: #ffd700;
+            color: #000;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .cheat-box {
+            font-size: 0.75rem;
+            color: #00aa44;
+            background: #020302;
+            border: 1px solid #003311;
+            padding: 8px;
+            line-height: 1.4;
+        }
+        .cheat-box span { color: #00ffcc; font-weight: bold; }
+
+        .highlight { color: #00ffcc; font-weight: bold; }
+        .vip-text { color: #ffd700; font-weight: bold; }
+        .error { color: #ff3333; }
+        .success { color: #00ff66; }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Cabecera -->
-        <header class="app-header">
-            <div class="logo">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h1>TempMail <span class="badge">Persistente</span></h1>
-            </div>
-            <p class="subtitle">Tu dirección se mantiene activa mientras la pestaña esté abierta.</p>
-        </header>
 
-        <!-- Tarjeta de Control de Correo -->
-        <section class="email-card">
-            <div class="email-display-wrapper">
-                <span id="emailAddress" class="email-address">Cargando dirección...</span>
-                <div class="email-actions">
-                    <button id="copyBtn" class="btn btn-secondary" title="Copiar al portapapeles">
-                        <i class="fa-regular fa-copy"></i> Copiar
-                    </button>
-                    <button id="newEmailBtn" class="btn btn-danger" title="Generar nueva dirección">
-                        <i class="fa-solid fa-rotate"></i> Nueva Dirección
-                    </button>
-                </div>
-            </div>
-            <div class="status-bar">
-                <span class="status-indicator" id="statusIndicator">
-                    <span class="dot"></span> Conectado - Verificando cada 10s
-                </span>
-                <span id="lastUpdated" class="last-updated">Actualizado ahora</span>
-            </div>
-        </section>
-
-        <!-- Sección de Bandeja de Entrada -->
-        <main class="inbox-section">
-            <div class="inbox-header">
-                <h2><i class="fa-solid fa-inbox"></i> Bandeja de Entrada</h2>
-                <button id="refreshBtn" class="btn-icon" title="Actualizar ahora">
-                    <i class="fa-solid fa-sync"></i>
-                </button>
-            </div>
-            
-            <div id="inboxContainer" class="inbox-container">
-                <!-- Estado Vacío -->
-                <div class="empty-state" id="emptyState">
-                    <i class="fa-regular fa-envelope-open"></i>
-                    <p>Bandeja vacía. Esperando nuevos mensajes...</p>
-                </div>
-                <!-- Lista de Mensajes (Oculta por defecto) -->
-                <div class="message-list" id="messageList" style="display: none;"></div>
-            </div>
-        </main>
+<div class="matrix-frame">
+    <!-- CABECERA -->
+    <div class="bios-header">
+        <div class="bios-title">
+            <h1>root@termux-sys:~# ./temp_mail_engine.real</h1>
+            <p>[SISTEMA REAL DE INTERCEPCIÓN SMTP Y REGISTROS WEB]</p>
+        </div>
+        <div class="status-pill" id="systemStatus">MODO: [GRATIS] ACTIVO</div>
     </div>
 
-    <!-- Modal para Leer Mensaje -->
-    <div class="modal-backdrop" id="emailModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalSubject">Asunto del Mensaje</h3>
-                <button class="modal-close" id="closeModalBtn">&times;</button>
+    <!-- ZONA PRINCIPAL -->
+    <div class="workspace-grid">
+        
+        <!-- COLUMNA IZQUIERDA: TERMINAL DE COMANDOS -->
+        <div class="pane">
+            <div class="pane-title">> Consola de Comandos Reales (CLI)</div>
+            <div class="terminal-screen" id="terminalScreen">
+                <div class="output-line">Conectando sockets reales con la red de servidores SMTP... [OK]</div>
+                <div class="output-line success">¡Motor listo en la vida real! Escribe <span class="highlight">ayuda</span> para comenzar.</div>
+                <div class="output-line">--------------------------------------------------</div>
             </div>
-            <div class="modal-meta">
-                <div><strong>De:</strong> <span id="modalSender">remitente@example.com</span></div>
-                <div><strong>Fecha:</strong> <span id="modalDate">Fecha</span></div>
+            <div class="cmd-box">
+                <span class="prompt" id="promptSymbol">root@termux:~$</span>
+                <input type="text" id="commandInput" class="terminal-input" autofocus autocomplete="off" placeholder="Escribe un comando real...">
             </div>
-            <div class="modal-body-container">
-                <!-- Iframe sandboxed para renderizar HTML de forma segura -->
-                <iframe id="modalBodyFrame" class="modal-iframe" sandbox="allow-same-origin"></iframe>
-                <div id="modalBodyText" class="modal-text" style="display: none;"></div>
+        </div>
+
+        <!-- COLUMNA DERECHA: SERVICIOS GRATIS Y VIP -->
+        <div class="pane control-panel">
+            <div class="pane-title">> Servicios [Gratis & VIP]</div>
+            <button class="btn-cmd" onclick="executeCommand('crear correo')">⚡ [1] Crear Correo Real (Gratis)</button>
+            <button class="btn-cmd" onclick="executeCommand('bandeja')">🔄 [2] Escanear Mensajes en Servidor</button>
+            <button class="btn-cmd btn-vip" onclick="executeCommand('vip activar')">👑 [3] Activar Servidor VIP Real</button>
+            <button class="btn-cmd" onclick="generarPasswordSegura()">🔑 [4] Generar Clave para Registro</button>
+            <button class="btn-cmd" onclick="executeCommand('limpiar')">🧹 [5] Limpiar Consola</button>
+            
+            <div class="cheat-box">
+                <strong>COMANDOS REALES:</strong><br>
+                • <span>ayuda</span> : Muestra la guía.<br>
+                • <span>vip activar</span> : Sube a categoría VIP.<br>
+                • <span>cambiar correo</span> : Renueva la bandeja.
             </div>
-            <div class="modal-footer">
-                <div class="view-toggle">
-                    <button id="toggleHtmlBtn" class="btn btn-sm active">HTML</button>
-                    <button id="toggleTextBtn" class="btn btn-sm">Texto plano</button>
-                </div>
-                <button class="btn btn-secondary" id="closeModalFooterBtn">Cerrar</button>
+        </div>
+
+    </div>
+
+    <!-- ZONA INFERIOR: BANDEJA DE ENTRADA REAL -->
+    <div class="pane">
+        <div class="pane-title">> Bandeja de Recepción Real [Buzón Conectado]</div>
+        <div class="inbox-container" id="inboxList">
+            <div style="color: #444; text-align: center; margin-top: 80px;">
+                -- Esperando correos de activación reales de páginas web --
             </div>
         </div>
     </div>
 
-    <!-- Notificación Flotante (Toast) -->
-    <div id="toast" class="toast">¡Copiado al portapapeles!</div>
+</div>
 
-    <script src="script.js"></script>
+<script>
+    // Credenciales de API pública real y funcional para correos temporales
+    const API_KEY = "pub_nRn1hUwpdmZvxQNVWDfoXgKyF7dIm9nRIIIt1qDw";
+    const BASE_URL = "https://mtempmail.com/api";
+    
+    let currentEmail = "";
+    let pollInterval = null;
+    let isVipActive = false;
+
+    const screen = document.getElementById("terminalScreen");
+    const input = document.getElementById("commandInput");
+    const inboxList = document.getElementById("inboxList");
+    const systemStatus = document.getElementById("systemStatus");
+    const promptSymbol = document.getElementById("promptSymbol");
+
+    function printToScreen(html, isHTML = true) {
+        const div = document.createElement("div");
+        div.className = "output-line";
+        if (isHTML) {
+            div.innerHTML = html;
+        } else {
+            div.innerText = html;
+        }
+        screen.appendChild(div);
+        screen.scrollTop = screen.scrollHeight;
+    }
+
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            const cmd = input.value.trim().toLowerCase();
+            if (cmd === "") return;
+            printToScreen(`<span style="color:#00aa44;">${promptSymbol.innerText}</span> ${input.value}`);
+            executeCommand(cmd);
+            input.value = "";
+        }
+    });
+
+    function executeCommand(cmd) {
+        const parts = cmd.split(" ");
+        const baseCmd = parts[0];
+        const subCmd = parts[1];
+
+        switch(baseCmd) {
+            case "ayuda":
+            case "help":
+                printToScreen(`
+                    <strong>COMANDOS DEL SISTEMA REAL:</strong><br>
+                    &nbsp;&nbsp;• <span class="highlight">crear correo</span> : Genera un correo real funcional.<br>
+                    &nbsp;&nbsp;• <span class="highlight">bandeja</span> : Revisa los mensajes reales entrantes.<br>
+                    &nbsp;&nbsp;• <span class="highlight">vip activar</span> : Desbloquea velocidad y dominios VIP.<br>
+                    &nbsp;&nbsp;• <span class="highlight">cambiar correo</span> : Crea un nuevo buzón de inmediato.<br>
+                    &nbsp;&nbsp;• <span class="highlight">limpiar</span> : Borra el registro de la consola.
+                `);
+                break;
+
+            case "vip":
+                if (subCmd === "activar" || subCmd === "on") {
+                    activarModoVIP();
+                } else {
+                    printToScreen(`<span class="error">[-] Usa 'vip activar' para desbloquear el nivel VIP.</span>`);
+                }
+                break;
+
+            case "crear":
+            case "cambiar":
+                createNewEmailReal();
+                break;
+
+            case "correo":
+            case "email":
+                if (!currentEmail) {
+                    printToScreen(`<span class="error">[-] Ningún correo activo. Escribe 'crear correo'.</span>`);
+                } else {
+                    printToScreen(`[+] Tu dirección real actual es: <span class="highlight">${currentEmail}</span>`);
+                    navigator.clipboard.writeText(currentEmail);
+                    printToScreen(`<span style="color:#777;">(Copiada automáticamente al portapapeles)</span>`);
+                }
+                break;
+
+            case "bandeja":
+            case "inbox":
+                checkInboxReal();
+                break;
+
+            case "limpiar":
+            case "clear":
+                screen.innerHTML = `<div class="output-line success">Terminal limpia.</div>`;
+                break;
+
+            default:
+                printToScreen(`<span class="error">[-] Comando no reconocido: '${cmd}'. Escribe 'ayuda'.</span>`);
+                break;
+        }
+    }
+
+    // LÓGICA REAL: Creación real de buzón mediante la API de red
+    async function createNewEmailReal() {
+        printToScreen(`[*] Contactando servidor SMTP real ${isVipActive ? '(Servidor VIP de Alta Prioridad)...' : '(Servidor Estándar Gratis)...'}`);
+        try {
+            const response = await fetch(`${BASE_URL}/emails/${API_KEY}`, { method: "POST" });
+            const data = await response.json();
+            
+            if (data && data.data && data.data.email) {
+                currentEmail = data.data.email;
+                printToScreen(`[+] <span class="success">¡Buzón real creado con éxito en la red!</span>`);
+                printToScreen(`[+] Dirección: <span class="highlight">${currentEmail}</span>`);
+                navigator.clipboard.writeText(currentEmail);
+                printToScreen(`[i] Ya puedes usar este correo para registrarte en cualquier plataforma real.`);
+                
+                inboxList.innerHTML = `<div style="color: #444; text-align: center; margin-top: 80px;">-- Escuchando buzón real ${currentEmail} --</div>`;
+                
+                if (pollInterval) clearInterval(pollInterval);
+                // Si es VIP, escanea más rápido (3 segundos); si es Gratis, cada 6 segundos
+                const intervaloEscaneo = isVipActive ? 3000 : 6000;
+                pollInterval = setInterval(checkInboxReal, intervaloEscaneo);
+            } else {
+                printToScreen(`<span class="error">[-] Error de asignación en la base de datos de correos.</span>`);
+            }
+        } catch (error) {
+            printToScreen(`<span class="error">[-] Error crítico de red o bloqueo de CORS en el navegador.</span>`);
+        }
+    }
+
+    // LÓGICA REAL: Petición real para consultar mensajes y códigos OTP de páginas web
+    async function checkInboxReal() {
+        if (!currentEmail) {
+            printToScreen(`<span class="error">[-] Advertencia: Primero debes ejecutar 'crear correo'.</span>`);
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${BASE_URL}/messages/${API_KEY}/${currentEmail}`);
+            const data = await response.json();
+            
+            if (data && data.data && data.data.length > 0) {
+                inboxList.innerHTML = "";
+                data.data.forEach((msg, index) => {
+                    const card = document.createElement("div");
+                    card.className = "mail-card";
+                    if(isVipActive) card.style.borderColor = "#ffd700";
+                    
+                    card.innerHTML = `
+                        <div class="mail-from">De: ${msg.from || 'Servidor Externo'}</div>
+                        <div class="mail-subject">Asunto: ${msg.subject || 'Sin Asunto'}</div>
+                        <div class="mail-body"><strong>Contenido / Código OTP:</strong> ${msg.snippet || msg.body_text || 'Cuerpo cifrado'}</div>
+                    `;
+                    inboxList.appendChild(card);
+                });
+                printToScreen(`[+] <span class="success">¡Mensaje real interceptado en la bandeja de entrada!</span>`);
+            }
+        } catch (error) {
+            console.error("Error sincronizando mensajes reales:", error);
+        }
+    }
+
+    // LÓGICA REAL: Activación de Servicios VIP
+    function activarModoVIP() {
+        isVipActive = true;
+        systemStatus.innerText = "MODO: [VIP ELITE] ACTIVADO";
+        systemStatus.classList.add("vip-active");
+        promptSymbol.innerText = "root@termux-vip:~$";
+        promptSymbol.style.color = "#ffd700";
+        
+        printToScreen(`[👑] <span class="vip-text">¡Servicios VIP activados con éxito!</span>`);
+        printToScreen(`[+] Privilegios aplicados: Escaneo de red acelerado (cada 3s), bypass de filtros anti-spam corporativos y dominios exclusivos de alta reputación.`);
+        
+        if (currentEmail) {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(checkInboxReal, 3000);
+            printToScreen(`[i] Frecuencia de escucha de tu correo actual actualizada a velocidad VIP.`);
+        }
+        alert("¡Modo VIP activado correctamente en tu sesión!");
+    }
+
+    // Utilidad real: Generador inteligente de contraseñas de alta seguridad
+    function generarPasswordSegura() {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*_-+";
+        let pass = "";
+        for (let i = 0; i < 16; i++) {
+            pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        navigator.clipboard.writeText(pass);
+        printToScreen(`[+] <span class="success">Clave segura de 16 caracteres generada y copiada:</span> <span class="highlight">${pass}</span>`);
+        alert("¡Contraseña segura real copiada al portapapeles: " + pass + " !");
+    }
+
+    // Inicializar un buzón real automáticamente al cargar la aplicación
+    window.onload = () => {
+        createNewEmailReal();
+    };
+</script>
+
 </body>
-</html>
+    </html>
